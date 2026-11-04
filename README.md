@@ -53,6 +53,10 @@ The fork's diff from podulator's main is the web support and what it needs:
   intro's own `patches/workbench_theboy.c`). An attract demo draws the whole wider view and culls by it as the game
   does, so its replay leaves out the check of the game's random seed against the recording, which the guards' other
   random numbers tripped a few seconds in: its guards then act on their own while Bond plays the recording to its end.
+- The in-game HUD to the sides of a window wider than 4:3, which the native build takes too: the ammo counters, the
+  messages at the top and bottom and the health and armour gauges sit as far from the window's sides as they sit from
+  the 4:3 view's, as far out as the HUD Placement setting lets them (`patches/hud.c`). The crosshair, the gun and the
+  watch stay centred, and split screen draws as the game does.
 - Fixes the page needed, which the native build takes too:
   - The patches yield through `recomp_yield_self_1ms`, a native whose signature matches the call (WebAssembly traps on
     one that doesn't), and the main loop's waits for its next tick yield as they poll (`patches/fps.c`; Status says
