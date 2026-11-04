@@ -47,6 +47,12 @@ The fork's diff from podulator's main is the web support and what it needs:
   window, sound through N64Recomp-browser's AudioWorklet output, render to RAM's late copy, the page's own game id
   (`ge007.n64.us`, under which a browser keeps the player's ROM and saves), and a Mouse Sensitivity of 0% saved by an
   earlier page loading as 50% (`src/game/config.cpp`).
+- The front end and the attract demos across a window wider than 4:3, which the native build takes too: the intro's
+  dots cross the whole window, its gun barrel slides in from the window's edge, the barrel behind the file select is
+  zoomed to fill the window, and the folder menus' cover runs to its edges (`patches/widescreen.c`, beside the
+  intro's own `patches/workbench_theboy.c`). An attract demo draws the whole wider view and culls by it as the game
+  does, so its replay leaves out the check of the game's random seed against the recording, which the guards' other
+  random numbers tripped a few seconds in: its guards then act on their own while Bond plays the recording to its end.
 - Fixes the page needed, which the native build takes too:
   - The patches yield through `recomp_yield_self_1ms`, a native whose signature matches the call (WebAssembly traps on
     one that doesn't), and the main loop's waits for its next tick yield as they poll (`patches/fps.c`; Status says
