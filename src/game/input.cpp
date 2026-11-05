@@ -3,7 +3,8 @@
 // - the default bindings, as the PC ports have them for the keyboard (with the mouse turning Bond and aiming,
 //   mouse.cpp), and for a controller;
 // - the pad the game reads: the bound buttons and stick, the mouse's buttons, the stick at the N64's range (0.65 of a
-//   full deflection), and the test harness's buttons;
+//   full deflection), and the test harness's buttons; while the Ext style plays, the two pads ext_controls.cpp makes
+//   of a modern pad and the keyboard in their place;
 // - the mouse as the patches take it: its motion and wheel, gathered from every event until the game takes them, and
 //   whether it was used more recently than a controller (mouse_in_use), which says whether the mouse plays.
 
@@ -196,28 +197,42 @@ bool zelda64::get_n64_input(int controller_num, uint16_t* buttons_out, float* x_
     float cur_x = 0.0f;
     float cur_y = 0.0f;
 
-    if (controller_num != 0) {
+    // The first pad, and the second while Ext plays (ext_controls.cpp), which reads none otherwise.
+    if (controller_num != 0 && controller_num != 1) {
         return false;
     }
+    bool ext = zelda64::ext_playing();
 
-    if (!recompinput::game_input_disabled()) {
+    if (!recompinput::game_input_disabled() && (controller_num == 0 || ext)) {
         int controller_profile = recompinput::profiles::get_sp_controller_profile_index();
         int keyboard_profile = recompinput::profiles::get_sp_keyboard_profile_index();
 
+        uint16_t keys = 0;
         for (size_t i = 0; i < n64_button_values.size(); i++) {
             GameInput input = static_cast<GameInput>((size_t)GameInput::N64_BUTTON_START + i);
-            cur_buttons |= get_digital(keyboard_profile, input) ? n64_button_values[i] : 0;
-            cur_buttons |= get_digital(controller_profile, input) ? n64_button_values[i] : 0;
+            keys |= get_digital(keyboard_profile, input) ? n64_button_values[i] : 0;
+        }
+        float key_x = get_analog(keyboard_profile, GameInput::X_AXIS_POS) - get_analog(keyboard_profile, GameInput::X_AXIS_NEG);
+        float key_y = get_analog(keyboard_profile, GameInput::Y_AXIS_POS) - get_analog(keyboard_profile, GameInput::Y_AXIS_NEG);
+
+        if (ext) {
+            zelda64::ext_input(controller_num, keys, key_x, key_y, &cur_buttons, &cur_x, &cur_y);
+        } else {
+            cur_buttons = keys;
+            for (size_t i = 0; i < n64_button_values.size(); i++) {
+                GameInput input = static_cast<GameInput>((size_t)GameInput::N64_BUTTON_START + i);
+                cur_buttons |= get_digital(controller_profile, input) ? n64_button_values[i] : 0;
+            }
+
+            float joystick_x = get_analog(controller_profile, GameInput::X_AXIS_POS) - get_analog(controller_profile, GameInput::X_AXIS_NEG);
+            float joystick_y = get_analog(controller_profile, GameInput::Y_AXIS_POS) - get_analog(controller_profile, GameInput::Y_AXIS_NEG);
+            recompinput::apply_joystick_deadzone(joystick_x, joystick_y, &joystick_x, &joystick_y);
+
+            cur_x = key_x + joystick_x;
+            cur_y = key_y + joystick_y;
         }
 
-        float joystick_x = get_analog(controller_profile, GameInput::X_AXIS_POS) - get_analog(controller_profile, GameInput::X_AXIS_NEG);
-        float joystick_y = get_analog(controller_profile, GameInput::Y_AXIS_POS) - get_analog(controller_profile, GameInput::Y_AXIS_NEG);
-        recompinput::apply_joystick_deadzone(joystick_x, joystick_y, &joystick_x, &joystick_y);
-
-        cur_x = get_analog(keyboard_profile, GameInput::X_AXIS_POS) - get_analog(keyboard_profile, GameInput::X_AXIS_NEG) + joystick_x;
-        cur_y = get_analog(keyboard_profile, GameInput::Y_AXIS_POS) - get_analog(keyboard_profile, GameInput::Y_AXIS_NEG) + joystick_y;
-
-        zelda64::apply_mouse_input(&cur_buttons, &cur_x);
+        zelda64::apply_mouse_input(controller_num, ext, &cur_buttons, &cur_x);
     }
 
     // Test harness (tools/harness.sh): GE_HARNESS_BUTTONS=<N64 button mask> holds those buttons, e.g. 0x0010 = R.
@@ -225,7 +240,9 @@ bool zelda64::get_n64_input(int controller_num, uint16_t* buttons_out, float* x_
         const char* value = getenv("GE_HARNESS_BUTTONS");
         return value != nullptr ? (uint16_t) strtoul(value, nullptr, 0) : (uint16_t) 0;
     }();
-    cur_buttons |= harness_buttons;
+    if (controller_num == 0) {
+        cur_buttons |= harness_buttons;
+    }
 
     *buttons_out = cur_buttons;
     *x_out = std::clamp(cur_x * 0.65f, -1.0f, 1.0f);

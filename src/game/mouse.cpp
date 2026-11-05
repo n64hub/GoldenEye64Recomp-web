@@ -4,10 +4,13 @@
 // - the mouse's buttons: left click fires (Z on the pad); right click aims, which the patches ask about, and in the
 //   game's menus, which the patches say are up, goes back (B on the pad);
 // - the actions GoldenEye has no N64 button for, which the patches perform: the Reload and Crouch inputs (R, and Left
-//   Ctrl or C, by default), and the wheel for the next and previous weapon;
+//   Ctrl or C, by default), the wheel for the next and previous weapon, and the pad's buttons for them while the Ext
+//   style plays (ext_controls.cpp);
 // - whether the mouse plays: the pointer locked to the game, and the mouse used more recently than a controller;
 // - in the tank, which the patches say Bond drives, C-left and C-right (A and D) as the stick's left and right while
 //   the mouse plays, so that they turn it;
+// - while the Ext style plays, left click on the second pad, whose Z fires there, and nothing else: the tank's stick
+//   is then the second pad's, which A and D are already on;
 // - Invert Mouse Y.
 
 #include <algorithm>
@@ -87,8 +90,15 @@ bool input_held(recompinput::GameInput input) {
 }
 } // namespace
 
-void zelda64::apply_mouse_input(uint16_t* buttons, float* x) {
+void zelda64::apply_mouse_input(int controller_num, bool ext, uint16_t* buttons, float* x) {
     if (!game_has_mouse()) {
+        return;
+    }
+    // While Ext plays, the second pad's Z fires and the stick that drives the tank is the second pad's.
+    if (ext) {
+        if (controller_num == 1 && mouse_button_held(SDL_BUTTON_LEFT)) {
+            *buttons |= n64_button_z;
+        }
         return;
     }
     if (mouse_button_held(SDL_BUTTON_LEFT)) {
@@ -115,16 +125,17 @@ void zelda64::apply_mouse_input(uint16_t* buttons, float* x) {
     }
 }
 
-// This tick's presses: the Reload and Crouch inputs as they go down, and a notch of the wheel.
+// This tick's presses: the Reload and Crouch inputs as they go down, a notch of the wheel, and Ext's buttons for them.
 extern "C" void recomp_get_mouse_actions(uint8_t* rdram, recomp_context* ctx) {
     bool reload = input_held(recompinput::GameInput::RELOAD);
     bool crouch = input_held(recompinput::GameInput::CROUCH);
+    uint32_t ext_actions = zelda64::ext_take_actions();
     int wheel = zelda64::take_mouse_wheel();
     if (!game_has_mouse()) {
         wheel = 0;
     }
 
-    uint32_t actions = 0;
+    uint32_t actions = ext_actions;
     {
         std::lock_guard lock{ mouse_mutex };
         auto now = std::chrono::steady_clock::now();

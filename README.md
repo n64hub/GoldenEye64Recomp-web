@@ -72,6 +72,8 @@ The fork's diff from podulator's main is the web support and what it needs:
     ROM stored when the program started, so Start game stayed Select ROM, and opened the file dialog again, until the
     program restarted.
 
+- Ext, a control style for a modern pad, the one a new file plays (A modern pad: Ext, below).
+
 ## No Nintendo assets
 
 This repository holds no game code, no game assets and no ROM data. You need your own GoldenEye 007 NTSC-U dump
@@ -214,3 +216,30 @@ game's side, and `src/game/input.cpp` and `src/game/mouse.cpp` the program's.
   RDRAM while S, W and the Down arrow were held: before, S went through all 33 items in half a second, one each tick;
   now it steps one at once, the next 0.4 s later and then one every 133 ms, in both browsers, and the Down arrow steps
   as before (one at once, then about six a second). A stand-in took the place of the pointer lock here too.
+
+## A modern pad: Ext
+
+A ninth control style, Ext, after 2.4 on the watch's Control page, plays a modern pad as the PC ports do (Perfect Dark's
+port's Ext, goldeneye-pc-port's modern scheme), and is the style a new file plays: `patches/ext_controls.c` is the
+game's side and `src/game/ext_controls.cpp` the program's.
+
+- The right stick turns and looks, the left stick walks and strafes, RT fires and LT aims (the game's aim mode, the
+  stick moving the crosshair, a push to its edge turning). Up looks up, and moves the crosshair up, with the game's
+  Look Up/Down option as it comes, which in the other styles has the stick and C-up look down, as a plane's stick
+  does; its other setting turns Ext's round too. A or RB is B (use, open), LB the game's A (held with a shot,
+  the previous weapon; tapped, the next), Y and B the next and previous weapon, X reloads, a click of the left stick
+  crouches (a toggle, as the crouch key's), and Start is the watch. In aim mode the left stick down crouches and up
+  stands, as 2.4 has it. The pad's buttons are these whatever the Controls tab binds it to, which the menus and the
+  watch keep, as do the other styles.
+- The keyboard plays on with the mouse as it does in 1.1: W and S walk, A and D strafe, the arrows turn and look (the
+  Up arrow up, as the right stick), F and left click fire, Left Shift is aim mode and right click aims without it, and the keys for reload, crouch and the
+  wheel are as above.
+- It is the game's 2.4 (Goodhead), which plays those sticks with two N64 pads, the first's stick turning and its Z
+  aiming, the second's walking and its Z firing: the game plays Ext as 2.4, and the program makes the two pads of one
+  modern pad and the keyboard while Bond is the player's to move. The watch shows Ext's buttons as text where it draws
+  the N64 pads, and Ext is listed only when one player plays.
+- A save keeps the style in 3 bits of its options, which the eight styles fill, so it keeps Ext as a bit the game never
+  sets, with 1.1 in the 3 bits (a console reads the file as 1.1), and every other style with another bit beside it. A
+  file with neither bit (a console's, one saved before Ext, or one the game has just made) keeps its style once a
+  mission is completed in it, and until then is new and plays Ext if its style is 1.1, the game's default. A file
+  whose player picked 1.1 on the watch since keeps 1.1.

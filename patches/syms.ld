@@ -89,3 +89,4 @@ recomp_mouse_playing = 0x8F000134;
 recomp_mouse_aim_held = 0x8F000138;
 recomp_mouse_menu_shown = 0x8F00013C;
 recomp_mouse_driving_tank = 0x8F000140;
+recomp_ext_playing = 0x8F000144;

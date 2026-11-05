@@ -24,9 +24,15 @@ namespace zelda64 {
     // The wheel's notches since the last call, up positive.
     int take_mouse_wheel();
 
-    // Mouse (mouse.cpp): the mouse's buttons and the tank's turning, applied to the pad.
-    void apply_mouse_input(uint16_t* buttons, float* x);
+    // Mouse (mouse.cpp): the mouse's buttons and the tank's turning, applied to a pad the game reads.
+    void apply_mouse_input(int controller_num, bool ext, uint16_t* buttons, float* x);
     bool get_mouse_invert_y();
+
+    // The Ext control style (ext_controls.cpp): whether it plays, a pad the game reads while it does, from the pad and
+    // the keyboard's N64 buttons and stick (keys, key_x, key_y), and the pad's presses of the actions N64 pads lack.
+    bool ext_playing();
+    void ext_input(int controller_num, uint16_t keys, float key_x, float key_y, uint16_t* buttons, float* x, float* y);
+    uint32_t ext_take_actions();
 
     // The game entry's on_init_callback: turns the stored retail ROM into the TLBFREE ROM the code was recompiled
     // from (rom_conversion.cpp).

@@ -28,7 +28,7 @@
 // angle and its turret's each tick, after his controls.
 //
 // The actions beyond the N64's buttons (reload, crouch, next and previous weapon) come from the program, which reads
-// them from the Reload and Crouch inputs and the wheel, and which also puts left click on the pad (fire) and says
+// them from the Reload and Crouch inputs and the wheel (and a pad's X, left stick click, Y and B in the Ext style), and which also puts left click on the pad (fire) and says
 // whether right click is held. Invert Mouse Y flips the mouse's up and down for looking and aiming.
 //
 // On the watch's inventory page, while the mouse plays, the stick (W and S) steps through the items an item a push, and
@@ -78,6 +78,7 @@
 #define PC_ACTION_NEXT_WEAPON 0x4
 #define PC_ACTION_PREV_WEAPON 0x8
 
+s32 ext_plays(void);
 s32 getCurrentPlayerWeaponId(s32 hand);
 void* get_ptr_item_statistics(s32 item);
 void caclulate_gun_crosshair_position_rotation(f32 x, f32 y, f32 crosshair_speed, f32 aim_lock_speed);
@@ -212,7 +213,10 @@ static void turn_tank_turret(f32 degrees_right, f32 degrees_up) {
 // controls while the watch is up and while his arm raises or lowers it too: what comes then is dropped, or the mouse
 // would turn him behind the watch.
 static void take_mouse(void) {
-    u32 actions = recomp_get_mouse_actions();
+    u32 actions;
+    // Whether the Ext style plays the pad (patches/ext_controls.c), before its presses are taken with the mouse's.
+    recomp_ext_playing(ext_plays() && getPlayerCount() == 1 && PLAYER_OUTSIDE_WATCH_MENU && !PLAYER_PAUSING);
+    actions = recomp_get_mouse_actions();
     f32 dx, dy;
     recomp_get_mouse_deltas(&dx, &dy);
     recomp_mouse_driving_tank(g_PlayerIsInTank == 1 && !PLAYER_INSIGHTAIMMODE);

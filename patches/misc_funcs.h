@@ -30,4 +30,5 @@ DECLARE_FUNC(s32, recomp_mouse_playing);
 DECLARE_FUNC(s32, recomp_mouse_aim_held);
 DECLARE_FUNC(void, recomp_mouse_menu_shown);
 DECLARE_FUNC(void, recomp_mouse_driving_tank, s32 driving);
+DECLARE_FUNC(void, recomp_ext_playing, s32 playing);
 #endif
