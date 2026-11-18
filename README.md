@@ -15,8 +15,8 @@
 > for: what it turns up is fixed there where it can be, so every recomp's page gets the fix.
 
 **Play it in the browser: https://n64hub.com/goldeneye/**, with your own ROM, picked in the
-launcher and kept in the browser. It needs WebGPU (Chrome or Edge 113 and up). The page is built from this branch
-and published with N64Recomp-browser's `tools/publish_page.sh`, so it can be a commit or two behind.
+launcher and kept in the browser. It needs WebGPU (Chrome or Edge 113 and up). The page is built from this branch, so it
+can be a commit or two behind.
 
 GoldenEye 007 (N64, NTSC-U) statically recompiled with [N64Recomp](https://github.com/N64Recomp/N64Recomp) into C,
 run by [N64ModernRuntime](https://github.com/N64Recomp/N64ModernRuntime) and drawn by [RT64](https://github.com/rt64/rt64),
@@ -88,10 +88,7 @@ ROM you load, so the launcher takes the retail dump as it is.
 
 - Native (Windows, clang-cl): the launcher, the gun-barrel intro and the attract demo.
 - The page: the launcher, Load ROM with the retail dump, the intro and its credits, the menus, and Dam walked on the
-  keyboard, at the game's 60 retraces a second, with sound on the browser's audio thread. No real gamepad tried. How
-  it plays, in which browser and on what graphics, is recorded in N64Recomp-browser's
-  [plays.jsonl](https://github.com/n64hub/N64Recomp-browser/blob/main/plays.jsonl) and its
-  [games table](https://github.com/n64hub/N64Recomp-browser#games).
+  keyboard, at the game's 60 retraces a second, with sound on the browser's audio thread. No real gamepad tried.
 - A steady 960 frames a second of the sound, about 2%, came up short in both browsers and natively: the game's audio
   manager made every buffer its minimum (`get_frames_remaining` in `src/main/main.cpp` says why). Since main 59dc8e8 it
   writes 48,000 frames a second and plays without a gap between the boot's shader wait and its first burst: on a
